@@ -523,6 +523,55 @@ identifies whether a token is found. If <code>secret = FALSE</code> the
 success message prints the token string in the console.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>scicomptools<span class="sc">::</span><span class="fu">token_check</span>(<span class="at">api =</span> <span class="st">&quot;github&quot;</span>, <span class="at">secret =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
 </div>
+<div id="exporting-github-issues-as-pdf-files" class="section level3">
+<h3>Exporting GitHub Issues as PDF Files</h3>
+<p>Sometimes it’s helpful to save GitHub issues as a reference for the
+future, but manually exporting each issue as a PDF file can be
+time-consuming. This is why <code>issue_extract</code> was created to
+streamline this process. When given the URL of a GitHub repository and a
+numeric vector of issue numbers, this function will start a remote
+Google Chrome browser session via <a href="https://github.com/rstudio/chromote">Chromote</a> and
+automatically navigate to the specified GitHub issues to export them as
+PDF files.</p>
+<p><code>issue_extract</code> works for both public and non-public
+GitHub repositories. Since non-public GitHub repositories require
+authentication, first you will need to save your credentials and then
+pass them into <code>issue_extract</code>. Below is an example of using
+this function to export GitHub issues from a private GitHub Enterprise
+repository.</p>
+<p>The first step is to open a new Chrome session.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Start new Chrome session</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> ChromoteSession<span class="sc">$</span><span class="fu">new</span>()</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Open interactive window</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>b<span class="sc">$</span><span class="fu">view</span>()</span></code></pre></div>
+<p>Then navigate to any page on the GitHub Enterprise/private repository
+and enter your credentials or login information on the browser session.
+Once you’ve logged in, save the cookies associated with this browser
+session as an R object using <code>b$Network$getCookies()</code>. Export
+this R object for later use and close the browser once you’re done.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Navigate to a random Github Enterprise issue</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Make sure to log in to GitHub Enterprise</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>b<span class="sc">$</span>Page<span class="sc">$</span><span class="fu">navigate</span>(<span class="st">&quot;https://github.nceas.ucsb.edu/LTER/lter-wg-scicomp/issues/278&quot;</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Save credentials as cookies </span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>cookies <span class="ot">&lt;-</span> b<span class="sc">$</span>Network<span class="sc">$</span><span class="fu">getCookies</span>()</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Export cookies for later use</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="fu">saveRDS</span>(cookies, <span class="st">&quot;cookies.rds&quot;</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Close the browser tab/window</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>b<span class="sc">$</span><span class="fu">close</span>()</span></code></pre></div>
+<p>Finally, restart your R session. Now you should be able to pass the
+file containing your cookies into <code>issue_extract</code> and access
+GitHub Enterprise/private repositories!</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># After saving cookies, you should restart R</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Then read in the cookies and export the necessary issues </span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Export GitHub issues #295 through #300 for a GitHub Enterprise repository</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="fu">issue_extract</span>(<span class="at">repo_url =</span> <span class="st">&quot;https://github.nceas.ucsb.edu/LTER/lter-wg-scicomp&quot;</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">issue_nums =</span> <span class="dv">295</span><span class="sc">:</span><span class="dv">300</span>,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">export_folder =</span> <span class="st">&quot;scicomp_issues&quot;</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">cookies =</span> <span class="st">&quot;cookies.rds&quot;</span>)</span></code></pre></div>
+</div>
 </div>
 
 

@@ -55,3 +55,32 @@ message("/Users/.../scicomptools/vignettes")
 ## ----token_check, eval = F----------------------------------------------------
 #  scicomptools::token_check(api = "github", secret = TRUE)
 
+## ----issue_extract_1, eval = F------------------------------------------------
+#  # Start new Chrome session
+#  b <- ChromoteSession$new()
+#  # Open interactive window
+#  b$view()
+
+## ----issue_extract_2, eval = F------------------------------------------------
+#  # Navigate to a random Github Enterprise issue
+#  # Make sure to log in to GitHub Enterprise
+#  b$Page$navigate("https://github.nceas.ucsb.edu/LTER/lter-wg-scicomp/issues/278")
+#  
+#  # Save credentials as cookies
+#  cookies <- b$Network$getCookies()
+#  # Export cookies for later use
+#  saveRDS(cookies, "cookies.rds")
+#  
+#  # Close the browser tab/window
+#  b$close()
+
+## ----issue_extract_3, eval = F------------------------------------------------
+#  # After saving cookies, you should restart R
+#  # Then read in the cookies and export the necessary issues
+#  
+#  # Export GitHub issues #295 through #300 for a GitHub Enterprise repository
+#  issue_extract(repo_url = "https://github.nceas.ucsb.edu/LTER/lter-wg-scicomp",
+#                issue_nums = 295:300,
+#                export_folder = "scicomp_issues",
+#                cookies = "cookies.rds")
+
